@@ -14,6 +14,20 @@ def import_movies():
                                 'Thriller', 'War', 'Western'],
                         encoding='latin-1')
     
+    genre_columns = ['unknown', 'Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime',
+                     'Documentary', 'Drama', 'Fantasy', 'Film-Noir', 'Horror', 'Musical', 'Mystery',
+                     'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western']
+    
+    def extract_genres(row):
+        genres = []
+        for genre in genre_columns:
+            if row[genre] == 1:
+                genres.append(genre)
+        return genres
+    
+    movies['genres'] = movies.apply(extract_genres, axis=1)
+    movies = movies[['movieId', 'title', 'release_date', 'genres']]
+
     ratings = pd.read_csv('../../ml-100k/u.data', sep='\t',
                           names=['userId', 'movieId', 'rating', 'timestamp'])
     
