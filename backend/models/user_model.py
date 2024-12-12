@@ -2,10 +2,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import re
 
 class User:
-    def __init__(self, username, email, password, ratings=None):
+    def __init__(self, username, email, password, ratings=None, hashed = False):
         self.username = username
         self.email = email
-        self.password = self.hash_password(password)
+        self.password = password if hashed else self.hash_password(password)
         self.ratings = []
 
     @staticmethod
@@ -27,3 +27,13 @@ class User:
             "password": self.password,
             "ratings": self.ratings
         }
+    
+    @staticmethod
+    def from_dict(data):
+        return User(
+            username = data["username"],
+            password = data["password"],
+            email = data["email"],
+            ratings = data.get("ratings", []),
+            hashed = True
+        )

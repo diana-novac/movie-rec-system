@@ -1,16 +1,17 @@
 from flask import Flask
 from utils.db import get_db
 
+from routes.auth_routes import auth_blueprint
+from flask_jwt_extended import JWTManager
+
 app = Flask(__name__)
 db = get_db()
 
-@app.route('/')
-def home():
-    try:
-        db.command("ping")
-        return "Connected to MongoDB"
-    except Exception as e:
-        return f"Failed to connect to MongoDB: {str(e)}"
+app.config['JWT_SECRET_KEY'] = 'abcdef1234567890abcdef1234567890'
+
+jwt = JWTManager(app)
+
+app.register_blueprint(auth_blueprint, url_prefix='/auth')
 
 
 if __name__ == '__main__':
