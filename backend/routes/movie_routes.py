@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from utils.db import get_db
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 movies_blueprint = Blueprint('movies', __name__)
 
@@ -62,3 +63,49 @@ def recommend_content():
     ))
 
     return jsonify({'recommendations': recommendations}), 200
+@movies_blueprint.route('/rate', methods=['POST'])
+@jwt_required()
+def rate_movie():
+    db = get_db()
+    username = get_jwt_identity()
+    data = request.get_json()
+
+    movie_id = data.get('movie_id')
+    rating = data.get('rating')
+
+    if movie_id is None:
+        return jsonify({'message': 'Invalid movie_id'}), 400
+
+    db.users.update_one(
+        {'username': username},
+        {'$pull': {'ratings': {'movie_id': movie_id}}}
+    )
+
+    db.users.update_one(
+        {'username': username},
+        {'$push': {'ratings': {'movie_id': movie_id, 'rating': rating}}}
+    )
+
+    db.ratings.update_one(
+        {'userId': username, 'movieId': movie_id},
+        {'$set': {'rating': rating}},
+        upsert=True
+    )
+
+    return jsonify({'message': 'Rating added/updated successfully!'}), 200
+
+@movies_blueprint.route('/user/ratings', methods=['GET'])
+@jwt_required()
+def get_user_ratings():
+    db = get_db()
+    username = get_jwt_identity()
+
+    user = db.users.find_one(
+        {'username': username},
+        {'_id': 0, 'ratings': 1}
+    )
+
+    if not user or 'ratings' not in user:
+        return jsonify({'ratings': []}), 200
+    
+    return jsonify({'ratings': user['ratings']}), 200
