@@ -36,33 +36,6 @@ def filter_genre():
     return jsonify(movies), 200
 
 
-@movies_blueprint.route('/recommend-content', methods = ['GET'])
-@jwt_required()
-def recommend_content():
-    db = get_db()
-    username = get_jwt_identity()
-
-    user = db.users.find_one({'username': username}, {'_id': 0, 'ratings': 1})
-    if not user or 'ratings' not in user:
-        return jsonify({'recommendations': []}), 200
-
-    high_rated_movies = [r['movie_id'] for r in user['ratings'] if r['rating'] >= 4]
-
-    if not high_rated_movies:
-        return jsonify({'recommendations': []}), 200
-
-    genres = set()
-    for movie_id in high_rated_movies:
-        movie = db.movies.find_one({'movieId': movie_id}, {'_id': 0, 'genres': 1})
-        if movie:
-            genres.update(movie['genres'])
-
-    recommendations = list(db.movies.find(
-        {'genres': {'$in': list(genres)}},
-        {'_id': 0, 'movieId': 1, 'title': 1, 'genres': 1}
-    ))
-
-    return jsonify({'recommendations': recommendations}), 200
 @movies_blueprint.route('/rate', methods=['POST'])
 @jwt_required()
 def rate_movie():
@@ -109,3 +82,75 @@ def get_user_ratings():
         return jsonify({'ratings': []}), 200
     
     return jsonify({'ratings': user['ratings']}), 200
+
+
+@movies_blueprint.route('/recommend-content', methods = ['GET'])
+@jwt_required()
+def recommend_content():
+    db = get_db()
+    username = get_jwt_identity()
+
+    user = db.find_one({'username': username}, {'_id': 0, 'ratings': 1})
+    if not user or 'ratings' not in user:
+        return jsonify({'recommendations':[]}), 200
+    
+    high_rated_movies = [r['movie_id'] for r in user['ratings']]
+    if not high_rated_movies:
+        return jsonify({'recommendations':[]}), 200
+    
+    genre_counts = {}
+    for movie_id in high_rated_movies:
+        movie = db.movies.find_one({'movieId': movie_id}, {'_id': 0, 'genres': 1})
+        if movie:
+            for genre in movie['genres']:
+                genre_counts[genre] = genre_counts.get(genre, 0) + 1
+
+    genre_items = genre_counts.items()
+
+    sorted_genres = sorted(genre_items, key=lambda x : -x[1])
+
+    preferred_genres = [genre for genre, count in sorted_genres]
+
+    sensitive_genres = {'Children', 'Animation', 'Family'}
+
+    recommendations = db.movies.aggregate([
+        {'$match': {
+            'genres': {'$in': preferred_genres},
+            'genres': {'$nin': ['Thriller', 'Horror']},
+            'movieId': {'$nin': high_rated_movies}
+        }},
+        {'$addFields': {
+            'common_genres': {
+                '$size': {'$setIntersection': ['$genres', preferred_genres]}
+            }
+        }},
+        {'$match': {'common_genres': {'$gte': 2}}},
+        {'$project': {
+            '_id': 0,
+            'movieId': 1,
+            'title': 1,
+            'genres': 1,
+            'common_genres': 1
+        }},
+    ])
+
+    recommendations = list(recommendations)
+
+    movie_ids = [rec['movieId'] for rec in recommendations]
+    ratings = db.movies.aggregate([
+        {'$match': {'movieId': {'$in': movie_ids}}},
+        {'$group': {
+            '_id': '$movieId',
+            'average_rating': {'$avg': '$rating'}
+        }}
+    ])
+
+    ratings_dict = {r['_id']: r['average_rating'] for r in ratings}
+
+    for rec in recommendations:
+        rec['average_rating'] = ratings_dict.get(rec['movieId'], 0)
+
+    recommendations.sort(key=lambda x: (x['common_genres'], x['average_rating']), reverse=True)
+
+    return jsonify({'recommendations': recommendations[:10]}), 200
+
