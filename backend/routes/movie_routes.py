@@ -83,7 +83,6 @@ def get_user_ratings():
     
     return jsonify({'ratings': user['ratings']}), 200
 
-
 @movies_blueprint.route('/recommend-content', methods = ['GET'])
 @jwt_required()
 def recommend_content():
@@ -112,11 +111,15 @@ def recommend_content():
     preferred_genres = [genre for genre, count in sorted_genres]
 
     sensitive_genres = {'Children', 'Animation', 'Family'}
+    
+    exclude_genres = []
+    if any(genre in sensitive_genres for genre in preferred_genres):
+        exclude_genres = ['Thriller', 'Horror']
 
     recommendations = db.movies.aggregate([
         {'$match': {
             'genres': {'$in': preferred_genres},
-            'genres': {'$nin': ['Thriller', 'Horror']},
+            'genres': {'$nin': exclude_genres},
             'movieId': {'$nin': high_rated_movies}
         }},
         {'$addFields': {
@@ -153,4 +156,3 @@ def recommend_content():
     recommendations.sort(key=lambda x: (x['common_genres'], x['average_rating']), reverse=True)
 
     return jsonify({'recommendations': recommendations[:10]}), 200
-
