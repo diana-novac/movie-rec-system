@@ -32,3 +32,21 @@ def collaborative_recommendations(user_id, ratings_df, movies_df):
     recommended_movie_ids = valid_movies[:10]
 
     return movies_df[movies_df['movieId'].isin(recommended_movie_ids)][['movieId', 'title', 'genres']]
+
+def content_based_recommendations(movie_id, movies_df):
+    movies_df['genres combined'] = movies_df['genres'].apply(lambda x:' '.join(x))
+
+    tfidf = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = tfidf.fit_transform(movies_df['genres_combined'])
+
+    cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
+
+    indices = pd.Series(movies_df.index, index = movies_df['movieId'])
+
+    idx = indices[movie_id]
+
+    sim_score= list(enumerate(cosine_sim[idx]))
+
+    movie_indices = [i[0] for i in sim_score[1:11]]
+
+    return movies_df.iloc[movie_indices][['movieId', 'title', 'genres']]
