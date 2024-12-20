@@ -20,31 +20,31 @@ const RateMovieForm = ({ movieId, onSuccess }) => {
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
-          },
-    }
-      );
-setMessage(res.data.message);
-setRating('');
-onSuccess();
-    } catch (error) {
-    setMessage('Failed to rate movie');
-}
-  };
+                    },
+                }
+            );
+            setMessage(res.data.message);
+            setRating('');
+            onSuccess();
+        } catch (error) {
+            setMessage('Failed to rate movie');
+        }
+    };
 
-return (
-    <div>
-        <input
-            type="number"
-            min="1"
-            max="5"
-            placeholder="Rating (1-5)"
-            value={rating}
-            onChange={(e) => setRating(e.target.value)}
-        />
-        <button onClick={handleRate}>Rate</button>
-        {message && <p>{message}</p>}
-    </div>
-);
+    return (
+        <div>
+            <input
+                type="number"
+                min="1"
+                max="5"
+                placeholder="Rating (1-5)"
+                value={rating}
+                onChange={(e) => setRating(e.target.value)}
+            />
+            <button onClick={handleRate}>Rate</button>
+            {message && <p>{message}</p>}
+        </div>
+    );
 };
 
 export default RateMovieForm;

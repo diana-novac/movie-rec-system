@@ -17,6 +17,8 @@ def load_data():
 def collaborative_recommendations(user_id, ratings_df, movies_df):
     ratings_df = ratings_df.drop_duplicates(subset=['userId', 'movieId']).dropna(subset=['userId', 'movieId', 'rating'])
 
+    ratings_df['rating'] = pd.to_numeric(ratings_df['rating'], errors='coerce')
+    
     user_movie_matrix = ratings_df.pivot(index='userId', columns='movieId', values='rating').fillna(0)
 
     knn = NearestNeighbors(metric='cosine', algorithm='brute')

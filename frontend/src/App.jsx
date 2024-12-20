@@ -4,6 +4,7 @@ import Register from './pages/Register';
 import Login from './pages/login';
 import Navbar from './components/navbar';
 import Movies from './pages/movies';
+import Recommendations from './pages/recommendations';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/movies" element={<Movies />} />
+        <Route path="/recommendations" element={<Recommendations />} />
       </Routes>
     </Router>
   );
