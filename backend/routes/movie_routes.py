@@ -76,15 +76,22 @@ def get_user_ratings():
     db = get_db()
     username = get_jwt_identity()
 
-    user = db.users.find_one(
-        {'username': username},
-        {'_id': 0, 'ratings': 1}
-    )
+    user = db.users.find_one({'username': username}, {'_id': 0, 'ratings': 1})
 
     if not user or 'ratings' not in user:
         return jsonify({'ratings': []}), 200
-    
-    return jsonify({'ratings': user['ratings']}), 200
+
+    ratings = user['ratings']
+
+    movie_ids = [rating['movie_id'] for rating in ratings]
+    movies = db.movies.find({'movieId': {'$in': movie_ids}}, {'_id': 0, 'title': 1, 'movieId': 1})
+
+    movie_titles = {movie['movieId']: movie['title'] for movie in movies}
+
+    for rating in ratings:
+        rating['movie_title'] = movie_titles.get(rating['movie_id'], 'Unknown Movie')
+
+    return jsonify({'ratings': ratings}), 200
 
 @movies_blueprint.route('/recommend-hybrid', methods=['GET'])
 @jwt_required()

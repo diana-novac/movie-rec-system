@@ -1,22 +1,17 @@
-import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const navigate = useNavigate();  // Folosim useNavigate în loc de useHistory
 
     useEffect(() => {
-        // Verificăm dacă există un token JWT stocat în localStorage
         const token = localStorage.getItem('token');
-        if (token) {
-            setIsLoggedIn(true); // Utilizatorul este logat
-        }
+        setIsLoggedIn(!!token);
     }, []);
 
     const handleLogout = () => {
-        localStorage.removeItem('token'); // Eliminăm token-ul
-        setIsLoggedIn(false); // Actualizăm starea
-        navigate('/'); // Redirecționăm utilizatorul la home
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
     };
 
     return (
@@ -35,7 +30,10 @@ const Navbar = () => {
                 {isLoggedIn ? (
                     <>
                         <li>
-                            <button onClick={handleLogout}>Logout</button>
+                            <Link to="/my-ratings">My Ratings</Link>
+                        </li>
+                        <li>
+                            <button onClick={handleLogout}>Log Out</button>
                         </li>
                     </>
                 ) : (

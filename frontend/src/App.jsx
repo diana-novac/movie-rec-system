@@ -5,6 +5,7 @@ import Login from './pages/login';
 import Navbar from './components/navbar';
 import Movies from './pages/movies';
 import Recommendations from './pages/recommendations';
+import MyRatings from './pages/my_ratings';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/movies" element={<Movies />} />
         <Route path="/recommendations" element={<Recommendations />} />
+        <Route path = "/my-ratings" element={<MyRatings />} />
       </Routes>
     </Router>
   );
