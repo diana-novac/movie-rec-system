@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from flask import Response, json
 from utils.db import get_db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.recommendations import load_data, hybrid_recommendations

@@ -28,6 +28,8 @@ def import_movies():
     movies['genres'] = movies.apply(extract_genres, axis=1)
     movies = movies[['movieId', 'title', 'release_date', 'genres']]
 
+    movies['release_date'] = movies['release_date'].fillna(None)
+
     ratings = pd.read_csv('../../ml-100k/u.data', sep='\t',
                           names=['userId', 'movieId', 'rating', 'timestamp'])
     
