@@ -105,6 +105,8 @@ def recommend_hybrid():
 
     user_ratings = user['ratings']
 
+    print(f"User ratings: {user_ratings}")
+
     user_ratings = [r for r in user_ratings if r['movie_id'] is not None]
 
     movies_df, ratings_df = load_data()
@@ -120,11 +122,14 @@ def recommend_hybrid():
 
     high_rated_movies = [r['movie_id'] for r in user_ratings if r['rating'] and int(r['rating']) >= 4]
 
+    print(f"High rated movies: {high_rated_movies}")
+
     if not high_rated_movies:
         return jsonify({'recommendations': []}), 200
 
     movie_id = high_rated_movies[0]
 
     recommendations = hybrid_recommendations(username, movie_id, movies_df, ratings_df)
-
+    print(f"Recommendations: {recommendations}")
+    
     return jsonify({'recommendations': recommendations.to_dict(orient='records')}), 200

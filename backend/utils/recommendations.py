@@ -58,10 +58,25 @@ def content_based_recommendations(movie_id, movies_df):
 
     return movies_df.iloc[movie_indices][['movieId', 'title', 'genres']]
 
-def hybrid_recommendations(user_id, movie_id, movies_df, ratings_df):
+def hybrid_recommendations(user_id, movie_id, movies_df, ratings_df, content_weight=0.5, collaborative_weight=0.5, diversity_penalty=0.3):
     content_recs = content_based_recommendations(movie_id, movies_df)
-
     collaborative_recs = collaborative_recommendations(user_id, ratings_df, movies_df)
-    hybrid_recs = pd.concat([content_recs, collaborative_recs]).drop_duplicates('movieId')
 
-    return hybrid_recs.head(10)
+    combined_recs = pd.concat([content_recs, collaborative_recs]).drop_duplicates('movieId')
+
+    user_rated_movie_ids = [rating['movieId'] for rating in ratings_df[ratings_df['userId'] == user_id].to_dict('records')]
+    combined_recs = combined_recs[~combined_recs['movieId'].isin(user_rated_movie_ids)]
+
+    combined_recs['score'] = 0
+
+    for i, row in combined_recs.iterrows():
+        if row['movieId'] in content_recs['movieId'].values:
+            combined_recs.at[i, 'score'] += content_weight
+        if row['movieId'] in collaborative_recs['movieId'].values:
+            combined_recs.at[i, 'score'] += collaborative_weight
+
+    genre_penalty = combined_recs['genres'].apply(lambda genres: len(set(genres)))
+    combined_recs['score'] -= diversity_penalty * genre_penalty
+    combined_recs['score'] = (combined_recs['score'] - combined_recs['score'].min()) / (combined_recs['score'].max() - combined_recs['score'].min())
+
+    return combined_recs.sort_values(by='score', ascending=False).head(10)[['movieId', 'title', 'genres', 'score']]
