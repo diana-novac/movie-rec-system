@@ -111,7 +111,7 @@ def recommend_hybrid():
         }
         ratings_df = pd.concat([ratings_df, pd.DataFrame([new_rating])], ignore_index=True)
 
-    high_rated_movies = [r['movie_id'] for r in user_ratings if int(r['rating']) >= 4]
+    high_rated_movies = [r['movie_id'] for r in user_ratings if r['rating'] and int(r['rating']) >= 4]
 
     if not high_rated_movies:
         return jsonify({'recommendations': []}), 200

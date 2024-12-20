@@ -8,6 +8,7 @@ const Movies = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedGenre, setSelectedGenre] = useState('');
     const [message, setMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false); // Adăugăm starea pentru încărcare
 
     const genres = [
         'unknown', 'Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime',
@@ -17,6 +18,7 @@ const Movies = () => {
 
     useEffect(() => {
         const fetchMovies = async () => {
+            setIsLoading(true); // Setăm la true când începe încărcarea
             try {
                 const res = await axios.get(`${import.meta.env.VITE_API_URL}/movies/get-all-movies`);
                 const parsedData = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
@@ -25,6 +27,8 @@ const Movies = () => {
             } catch (error) {
                 console.error('Failed to fetch movies:', error);
                 setMessage('Failed to fetch movies');
+            } finally {
+                setIsLoading(false); // Setăm la false când s-a terminat încărcarea
             }
         };
 
@@ -38,6 +42,7 @@ const Movies = () => {
             return;
         }
 
+        setIsLoading(true); // Setăm la true când începe căutarea
         try {
             const res = await axios.get(
                 `${import.meta.env.VITE_API_URL}/movies/search-movie?title=${searchQuery}`
@@ -47,14 +52,18 @@ const Movies = () => {
         } catch (error) {
             console.error('Failed to search movies:', error);
             setMessage('Failed to search movies');
+        } finally {
+            setIsLoading(false); // Setăm la false când s-a terminat căutarea
         }
     };
 
     const handleGenreFilter = async (genre) => {
         setSelectedGenre(genre);
+        setIsLoading(true); // Setăm la true când începe filtrarea
         if (!genre) {
             // Dacă nu este selectat niciun gen, afișează primele 100 filme
             setDisplayedMovies(movies.slice(0, 100));
+            setIsLoading(false); // Setăm la false dacă nu este niciun filtru
             return;
         }
 
@@ -67,6 +76,8 @@ const Movies = () => {
         } catch (error) {
             console.error('Failed to filter movies by genre:', error);
             setMessage('Failed to filter movies by genre');
+        } finally {
+            setIsLoading(false); // Setăm la false când s-a terminat filtrarea
         }
     };
 
@@ -103,6 +114,9 @@ const Movies = () => {
             </div>
 
             {message && <p>{message}</p>}
+
+            {/* Spinner de încărcare */}
+            {isLoading && <div className="spinner">Loading...</div>}
 
             {/* Movie List */}
             <ul>

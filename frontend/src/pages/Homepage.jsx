@@ -60,7 +60,7 @@ const Homepage = () => {
 									<p>Genres: {movie.genres.join(', ')}</p>
 									<RateMovieForm
 										movieId={movie.movieId}
-										onSuccess={() => setMessage('Rating added successfully')}
+										onSuccess={setMessage}
 									/>
 								</div>
 							</li>
