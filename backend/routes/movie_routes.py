@@ -15,12 +15,13 @@ def list_movies():
 
 @movies_blueprint.route('/search-movie', methods=['GET'])
 def search_movies():
+    # Search for movies by title
     db = get_db()
     title = request.args.get('title')
-    
+
     if not title:
         return jsonify({'message': 'Invalid request'}), 400
-    
+
     query = {'title': {'$regex': title, '$options': 'i'}}
     movies = list(db.movies.find(query, {'_id': 0}))
 
@@ -28,20 +29,22 @@ def search_movies():
 
 @movies_blueprint.route('/filter-genre', methods=['GET'])
 def filter_genre():
+    # Filter movies by genre
     db = get_db()
     genre = request.args.get('genre')
 
     if not genre:
         return jsonify({'message': 'Invalid request'}), 400
-    query = {'genres':genre}
+
+    query = {'genres': genre}
     movies = list(db.movies.find(query, {'_id': 0}))
 
     return jsonify(movies), 200
 
-
 @movies_blueprint.route('/rate', methods=['POST'])
 @jwt_required()
 def rate_movie():
+    # Rate or update a movie rating for the logged-in user
     db = get_db()
     username = get_jwt_identity()
     data = request.get_json()
@@ -52,16 +55,19 @@ def rate_movie():
     if movie_id is None:
         return jsonify({'message': 'Invalid movie_id'}), 400
 
+    # Remove existing rating for the movie
     db.users.update_one(
         {'username': username},
         {'$pull': {'ratings': {'movie_id': movie_id}}}
     )
 
+    # Add or update the new rating
     db.users.update_one(
         {'username': username},
         {'$push': {'ratings': {'movie_id': movie_id, 'rating': rating}}}
     )
 
+    # Update the ratings collection
     db.ratings.update_one(
         {'userId': username, 'movieId': movie_id},
         {'$set': {'rating': rating}},
@@ -77,17 +83,18 @@ def get_user_ratings():
     username = get_jwt_identity()
 
     user = db.users.find_one({'username': username}, {'_id': 0, 'ratings': 1})
-
     if not user or 'ratings' not in user:
         return jsonify({'ratings': []}), 200
 
     ratings = user['ratings']
 
+    # Fetch movie titles for the rated movies
     movie_ids = [rating['movie_id'] for rating in ratings]
     movies = db.movies.find({'movieId': {'$in': movie_ids}}, {'_id': 0, 'title': 1, 'movieId': 1})
 
     movie_titles = {movie['movieId']: movie['title'] for movie in movies}
 
+    # Add movie titles to the ratings
     for rating in ratings:
         rating['movie_title'] = movie_titles.get(rating['movie_id'], 'Unknown Movie')
 
@@ -96,6 +103,7 @@ def get_user_ratings():
 @movies_blueprint.route('/recommend-hybrid', methods=['GET'])
 @jwt_required()
 def recommend_hybrid():
+    # Provide hybrid recommendations for the logged-in user
     db = get_db()
     username = get_jwt_identity()
 
@@ -103,14 +111,11 @@ def recommend_hybrid():
     if not user:
         return jsonify({'recommendations': []}), 200
 
-    user_ratings = user['ratings']
-
-    print(f"User ratings: {user_ratings}")
-
-    user_ratings = [r for r in user_ratings if r['movie_id'] is not None]
+    user_ratings = [r for r in user['ratings'] if r['movie_id'] is not None]
 
     movies_df, ratings_df = load_data()
 
+    # Append user ratings to the ratings dataset
     for rating in user_ratings:
         new_rating = {
             'userId': username,
@@ -120,16 +125,15 @@ def recommend_hybrid():
         }
         ratings_df = pd.concat([ratings_df, pd.DataFrame([new_rating])], ignore_index=True)
 
+    # Get highly rated movies for recommendations
     high_rated_movies = [r['movie_id'] for r in user_ratings if r['rating'] and int(r['rating']) >= 4]
-
-    print(f"High rated movies: {high_rated_movies}")
 
     if not high_rated_movies:
         return jsonify({'recommendations': []}), 200
 
     movie_id = high_rated_movies[0]
 
+    # Generate hybrid recommendations
     recommendations = hybrid_recommendations(username, movie_id, movies_df, ratings_df)
-    print(f"Recommendations: {recommendations}")
-    
+
     return jsonify({'recommendations': recommendations.to_dict(orient='records')}), 200

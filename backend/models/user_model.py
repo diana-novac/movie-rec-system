@@ -20,6 +20,7 @@ class User:
         pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
         return re.match(pattern, email) is not None
     
+    # Convert to dictionary
     def to_dict(self):
         return {
             "username": self.username,
@@ -28,6 +29,7 @@ class User:
             "ratings": self.ratings
         }
     
+    # Create user from dictionary
     @staticmethod
     def from_dict(data):
         return User(
