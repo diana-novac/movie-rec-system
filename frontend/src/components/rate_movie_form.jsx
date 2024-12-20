@@ -37,7 +37,7 @@ const RateMovieForm = ({ movieId, onSuccess }) => {
                 type="number"
                 min="1"
                 max="5"
-                placeholder="Rating (1-5)"
+                placeholder="Rate (1-5)"
                 value={rating}
                 onChange={(e) => setRating(e.target.value)}
             />

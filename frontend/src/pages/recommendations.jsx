@@ -38,14 +38,14 @@ fetchRecommendations();
   }, []);
 
 return (
-    <div>
+    <div className="container">
         <h1>Your Recommendations</h1>
         {loading ? (
             <ClipLoader size={50} />
         ) : message ? (
             <p>{message}</p>
         ) : recommendations.length > 0 ? (
-            <ul>
+            <ul className="recommendations-list">
                 {recommendations.map((movie) => (
                     <li key={movie.movieId}>
                         <h3>{movie.title}</h3>

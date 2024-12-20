@@ -15,9 +15,13 @@ const Navbar = () => {
     };
 
     return (
-        <nav>
-            <h1>Movie Recommender</h1>
-            <ul>
+        <nav className="navbar">
+            <div className="navbar-logo">
+                <Link to="/">
+                    Movie Recommender
+                </Link>
+            </div>
+            <ul className="navbar-links">
                 <li>
                     <Link to="/">Home</Link>
                 </li>

@@ -81,7 +81,7 @@ const Movies = () => {
     };
 
     return (
-        <div>
+        <div className="container">
             <h1>All Movies</h1>
             
             <div>
@@ -118,7 +118,7 @@ const Movies = () => {
                 </div>
             )}
 
-            <ul>
+            <ul className="movies-list">
                 {Array.isArray(displayedMovies) && displayedMovies.length > 0 ? (
                     displayedMovies.map((movie) => (
                         <li key={movie.movieId}>

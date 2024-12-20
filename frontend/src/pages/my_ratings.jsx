@@ -37,7 +37,7 @@ fetchUserRatings();
     }, []);
 
 return (
-    <div>
+    <div className="container">
         <h1>My Ratings</h1>
 
         {}
@@ -49,7 +49,7 @@ return (
             <>
                 {message && <p>{message}</p>}
                 {userRatings.length > 0 ? (
-                    <ul>
+                    <ul className="movies-list">
                         {userRatings.map((rating) => (
                             <li key={rating.movie_id}>
                                 <h3>{rating.movie_title} - Rating: {rating.rating}</h3>

@@ -6,6 +6,7 @@ import Navbar from './components/navbar';
 import Movies from './pages/movies';
 import Recommendations from './pages/recommendations';
 import MyRatings from './pages/my_ratings';
+import './App.css';
 
 function App() {
   return (

@@ -23,45 +23,44 @@ const Homepage = () => {
 	};
 
 	return (
-		<div>
-			<h1>Welcome to Movie Recommender</h1>
-			<p>Discover your favorite movies and rate them directly!</p>
+		<div className="homepage container">
+			<h1 className="homepage-title">Welcome to Movie Recommender</h1>
 
-			{/* Search Section */}
-			<div>
+			<div className="search-section">
 				<input
 					type="text"
+					className="search-input"
 					placeholder="Search for a movie..."
 					value={searchQuery}
 					onChange={(e) => setSearchQuery(e.target.value)}
 				/>
-				<button onClick={handleSearch}>Search</button>
+				<button className="search-button" onClick={handleSearch}>Search</button>
 			</div>
 
-			{/* Navigation Buttons */}
-			<div>
+			<div className="buttons-section">
 				<Link to="/movies">
-					<button>Explore Movies</button>
+					<button className="nav-button">Explore Movies</button>
 				</Link>
 				<Link to="/recommendations">
-					<button>Get Recommendations</button>
+					<button className="nav-button">Get Recommendations</button>
 				</Link>
 			</div>
 
-			{/* Search Results */}
 			{searchResults.length > 0 && (
-				<div>
+				<div className="search-results">
 					<h2>Search Results</h2>
 					<ul>
 						{searchResults.map((movie) => (
-							<li key={movie.movieId}>
+							<li key={movie.movieId} className="movie-card">
 								<div>
 									<h3>{movie.title}</h3>
 									<p>Genres: {movie.genres.join(', ')}</p>
-									<RateMovieForm
-										movieId={movie.movieId}
-										onSuccess={setMessage}
-									/>
+									<div className="rating-section">
+										<RateMovieForm
+											movieId={movie.movieId}
+											onSuccess={setMessage}
+										/>
+									</div>
 								</div>
 							</li>
 						))}
@@ -69,7 +68,7 @@ const Homepage = () => {
 				</div>
 			)}
 
-			{message && <p>{message}</p>}
+			{message && <p className="message">{message}</p>}
 		</div>
 	);
 };

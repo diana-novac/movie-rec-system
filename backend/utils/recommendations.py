@@ -79,4 +79,4 @@ def hybrid_recommendations(user_id, movie_id, movies_df, ratings_df, content_wei
     combined_recs['score'] -= diversity_penalty * genre_penalty
     combined_recs['score'] = (combined_recs['score'] - combined_recs['score'].min()) / (combined_recs['score'].max() - combined_recs['score'].min())
 
-    return combined_recs.sort_values(by='score', ascending=False).head(10)[['movieId', 'title', 'genres', 'score']]
+    return combined_recs.sort_values(by='score', ascending=False).head(15)[['movieId', 'title', 'genres', 'score']]
