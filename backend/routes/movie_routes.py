@@ -91,48 +91,32 @@ def recommend_hybrid():
     db = get_db()
     username = get_jwt_identity()
 
-    # Obține rating-urile utilizatorului aplicației
     user = db.users.find_one({'username': username}, {'_id': 0, 'ratings': 1})
     if not user:
-        print("User not found in users collection.")
         return jsonify({'recommendations': []}), 200
 
     user_ratings = user['ratings']
-    print("User Ratings:")
-    print(user_ratings)
 
-    # Filtrează `None` din rating-uri
     user_ratings = [r for r in user_ratings if r['movie_id'] is not None]
 
-    # Încarcă datele din baza de date
     movies_df, ratings_df = load_data()
 
-    # Adaugă rating-urile utilizatorului aplicației în ratings_df
     for rating in user_ratings:
         new_rating = {
-            'userId': username,  # Folosim username-ul ca identificator
+            'userId': username,
             'movieId': rating['movie_id'],
             'rating': rating['rating'],
             'timestamp': None
         }
         ratings_df = pd.concat([ratings_df, pd.DataFrame([new_rating])], ignore_index=True)
 
-    # Selectăm un film bine evaluat de utilizator
     high_rated_movies = [r['movie_id'] for r in user_ratings if r['rating'] >= 4]
-    print("High Rated Movies:")
-    print(high_rated_movies)
 
     if not high_rated_movies:
-        print("No high-rated movies found.")
         return jsonify({'recommendations': []}), 200
 
     movie_id = high_rated_movies[0]
-    print(f"Selected Movie ID for Content-Based Recommendations: {movie_id}")
 
-    # Recomandări hibride
     recommendations = hybrid_recommendations(username, movie_id, movies_df, ratings_df)
-
-    print("Recommendations:")
-    print(recommendations)
 
     return jsonify({'recommendations': recommendations.to_dict(orient='records')}), 200

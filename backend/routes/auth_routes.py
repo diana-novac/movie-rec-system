@@ -43,9 +43,6 @@ def login():
     
     user = User.from_dict(user_data)
 
-    print(f"Password entered: {password}")
-    print(f"Password hash in DB: {user.password}")
-
     if not user.check_password(password):
         return jsonify({'message': 'Invalid password'}), 401
     
