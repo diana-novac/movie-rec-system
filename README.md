@@ -63,6 +63,7 @@ src/
 
 ## Running the project
 - You should have npm and mongodb installed
+- In the frontend directory run npm install
 - Run the import_movielens.py script to load the movie data into your local database
 - Run *pip install -r requirements.txt*
 - Run the frontend with *npm run dev*
